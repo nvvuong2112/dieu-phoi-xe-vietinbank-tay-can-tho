@@ -4,10 +4,268 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Điều phối xe VietinBank Tây Cần Thơ</title>
+    <title>Hệ thống Quản lý & Điều hành Đội xe – VietinBank Tây Cần Thơ</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Dự án điều phối xe VietinBank Tây Cần Thơ</h1>
-    <p>Trang đang được xây dựng.</p>
+
+<!-- ========== HEADER ========== -->
+<header class="header-banner">
+    <div class="container header-inner">
+        <div class="header-left">
+            <div class="header-org">Ngân hàng TMCP Công Thương Việt Nam</div>
+            <div class="header-branch">Chi nhánh Tây Cần Thơ</div>
+            <div class="header-title">Hệ thống Quản lý &amp; Điều hành Đội xe Tập trung (Prototype)</div>
+            <div class="header-subtitle">Demo chạy thử – dữ liệu mẫu – dùng để lấy góp ý cải tiến.</div>
+        </div>
+        <div class="header-right">
+            <label for="role-select">Chế độ:</label>
+            <select id="role-select">
+                <option value="admin">Admin / Điều hành</option>
+                <option value="viewer">Nhân viên (Viewer)</option>
+            </select>
+            <button class="btn btn-outline btn-sm" id="btn-reset" title="Đặt lại dữ liệu mặc định">Reset</button>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- ========== GUIDE BOX ========== -->
+    <div class="guide-box">
+        <h3>Hướng dẫn test nhanh</h3>
+        <ol>
+            <li>Chọn chế độ <strong>Admin / Điều hành</strong> &rarr; Bấm <strong>"Tạo lệnh"</strong> ở xe <em>Sẵn sàng</em> &rarr; Chọn lái xe, nhập lộ trình &rarr; Bấm <strong>"Duyệt lệnh"</strong>.</li>
+            <li>Xem xe/lái xe <strong>đổi trạng thái</strong> ngay + <strong>Dashboard cập nhật</strong> số liệu.</li>
+            <li>Bấm <strong>"Kết thúc chuyến"</strong> &rarr; Xe &amp; lái xe quay về trạng thái <em>Sẵn sàng / Chờ lệnh</em>.</li>
+        </ol>
+    </div>
+
+    <!-- ========== DATE RANGE ========== -->
+    <div class="date-range-bar" id="date-range"></div>
+
+    <!-- ========== DASHBOARD ========== -->
+    <section class="dashboard">
+        <div class="stat-card stat-total">
+            <div class="stat-number" id="stat-total">0</div>
+            <div class="stat-label">Tổng số xe</div>
+        </div>
+        <div class="stat-card stat-onduty">
+            <div class="stat-number" id="stat-onduty">0</div>
+            <div class="stat-label">Đang công tác</div>
+        </div>
+        <div class="stat-card stat-maintenance">
+            <div class="stat-number" id="stat-maintenance">0</div>
+            <div class="stat-label">Đang bảo trì</div>
+        </div>
+        <div class="stat-card stat-available">
+            <div class="stat-number" id="stat-available">0</div>
+            <div class="stat-label">Sẵn sàng</div>
+        </div>
+    </section>
+
+    <!-- ========== CHART ========== -->
+    <section class="chart-section">
+        <h3>Biểu đồ trạng thái phương tiện</h3>
+        <div class="chart-container">
+            <canvas id="statusChart" width="220" height="220"></canvas>
+            <div class="chart-legend">
+                <div class="chart-legend-item">
+                    <span class="legend-color" style="background:#1B7A2D;"></span>
+                    <span id="legend-avail">Sẵn sàng: 0</span>
+                </div>
+                <div class="chart-legend-item">
+                    <span class="legend-color" style="background:#00529B;"></span>
+                    <span id="legend-onduty">Đang công tác: 0</span>
+                </div>
+                <div class="chart-legend-item">
+                    <span class="legend-color" style="background:#C8102E;"></span>
+                    <span id="legend-maint">Đang bảo trì: 0</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== VEHICLE TABLE ========== -->
+    <section class="section-panel">
+        <div class="section-header">
+            <h2>Danh sách phương tiện thuộc quản lý</h2>
+            <div class="section-toolbar">
+                <input type="text" id="vehicle-search" placeholder="Tìm biển số...">
+                <select id="vehicle-filter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="available">Sẵn sàng</option>
+                    <option value="onduty">Đang công tác</option>
+                    <option value="maintenance">Đang bảo trì</option>
+                </select>
+            </div>
+        </div>
+        <div class="section-body">
+            <table class="vtb-table">
+                <thead>
+                    <tr>
+                        <th class="col-stt">STT</th>
+                        <th>Biển kiểm soát</th>
+                        <th>Loại xe</th>
+                        <th>Trạng thái</th>
+                        <th>Dự kiến trống lúc</th>
+                        <th>Ghi chú</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="vehicle-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ========== DRIVER TABLE ========== -->
+    <section class="section-panel">
+        <div class="section-header">
+            <h2>Danh sách lái xe</h2>
+            <div class="section-toolbar">
+                <input type="text" id="driver-search" placeholder="Tìm theo tên...">
+                <select id="driver-filter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="waiting">Đang chờ lệnh</option>
+                    <option value="driving">Đang cầm lái</option>
+                    <option value="leave">Nghỉ phép</option>
+                </select>
+            </div>
+        </div>
+        <div class="section-body">
+            <table class="vtb-table">
+                <thead>
+                    <tr>
+                        <th class="col-stt">STT</th>
+                        <th>Họ tên</th>
+                        <th>Trạng thái</th>
+                        <th>Lộ trình / Chuyến</th>
+                        <th>Ghi chú</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="driver-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ========== UPCOMING + REPORT ========== -->
+    <div class="mini-section">
+        <!-- Lịch xe sắp trống -->
+        <div class="mini-panel">
+            <div class="mini-panel-header">
+                <h3>Lịch xe sắp trống (Top 5)</h3>
+            </div>
+            <div class="mini-panel-body" style="padding:0;">
+                <table class="vtb-table">
+                    <thead>
+                        <tr>
+                            <th>Biển số</th>
+                            <th>Dự kiến trống lúc</th>
+                            <th>Lộ trình</th>
+                        </tr>
+                    </thead>
+                    <tbody id="upcoming-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Báo cáo tháng -->
+        <div class="mini-panel">
+            <div class="mini-panel-header">
+                <h3>Báo cáo tháng (Demo)</h3>
+            </div>
+            <div class="mini-panel-body">
+                <div class="report-stat">
+                    <div class="report-stat-item">
+                        <div class="rsi-value" id="report-trips">0</div>
+                        <div class="rsi-label">Tổng chuyến</div>
+                    </div>
+                    <div class="report-stat-item">
+                        <div class="rsi-value" id="report-km">0</div>
+                        <div class="rsi-label">Tổng km</div>
+                    </div>
+                    <div class="report-stat-item">
+                        <div class="rsi-value" id="report-fuel">0</div>
+                        <div class="rsi-label">Nhiên liệu (lít)</div>
+                    </div>
+                    <div class="report-stat-item">
+                        <div class="rsi-value">Top 3</div>
+                        <div class="rsi-label">Lái xe nổi bật</div>
+                    </div>
+                </div>
+                <table class="vtb-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">Hạng</th>
+                            <th>Lái xe</th>
+                            <th style="text-align:center;">Số chuyến</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-top-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ========== FOOTER ========== -->
+<footer class="page-footer">
+    <div class="container">
+        <div class="footer-sign">
+            <div class="sign-dept">Phòng Tổ chức Hành chính</div>
+            <div class="sign-note">(Ký, ghi rõ họ tên)</div>
+            <div class="sign-name">&nbsp;</div>
+        </div>
+        <div class="footer-copy">
+            Prototype demo – VietinBank Chi nhánh Tây Cần Thơ – Dữ liệu mẫu, không phải hệ thống chính thức.
+        </div>
+    </div>
+</footer>
+
+<!-- ========== MODAL: TẠO LỆNH ĐIỀU XE ========== -->
+<div class="modal-overlay" id="modal-order">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Phiếu điều xe (Demo)</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Xe được điều</label>
+                <input type="text" id="order-vehicle" readonly>
+            </div>
+            <div class="form-group">
+                <label>Chọn lái xe <span style="color:#C8102E;">*</span></label>
+                <select id="order-driver">
+                    <option value="">-- Chọn lái xe --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Lộ trình <span style="color:#C8102E;">*</span></label>
+                <input type="text" id="order-route" placeholder="VD: PGD Bình Thủy → PGD KCN Thốt Nốt">
+            </div>
+            <div class="form-group">
+                <label>Thời gian bắt đầu</label>
+                <input type="datetime-local" id="order-start">
+            </div>
+            <div class="form-group">
+                <label>Thời gian dự kiến kết thúc</label>
+                <input type="datetime-local" id="order-end">
+            </div>
+            <div class="form-group">
+                <label>Ghi chú</label>
+                <textarea id="order-note" placeholder="Ghi chú thêm (nếu có)..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="btn-cancel-order">Hủy</button>
+            <button class="btn btn-primary" id="btn-submit-order">Duyệt lệnh</button>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>

@@ -21,8 +21,8 @@
         <div class="header-right">
             <label for="role-select">Chế độ:</label>
             <select id="role-select">
+                <option value="employee">Nhân viên</option>
                 <option value="admin">Admin / Điều hành</option>
-                <option value="viewer">Nhân viên (Viewer)</option>
             </select>
             <button class="btn btn-outline btn-sm" id="btn-reset" title="Đặt lại dữ liệu mặc định">Reset</button>
         </div>
@@ -35,16 +35,16 @@
     <div class="guide-box">
         <h3>Hướng dẫn test nhanh</h3>
         <ol>
-            <li>Chọn chế độ <strong>Admin / Điều hành</strong> &rarr; Bấm <strong>"Tạo lệnh"</strong> ở xe <em>Sẵn sàng</em> &rarr; Chọn lái xe, nhập lộ trình &rarr; Bấm <strong>"Duyệt lệnh"</strong>.</li>
-            <li>Xem xe/lái xe <strong>đổi trạng thái</strong> ngay + <strong>Dashboard cập nhật</strong> số liệu.</li>
-            <li>Bấm <strong>"Kết thúc chuyến"</strong> &rarr; Xe &amp; lái xe quay về trạng thái <em>Sẵn sàng / Chờ lệnh</em>.</li>
+            <li>Chọn chế độ <strong>Nhân viên</strong> &rarr; Vào tab <strong>"Yêu cầu"</strong> &rarr; Bấm <strong>"Tạo yêu cầu"</strong> &rarr; Nhập thông tin &rarr; Gửi.</li>
+            <li>Chuyển sang <strong>Admin / Điều hành</strong> &rarr; Vào tab <strong>"Yêu cầu"</strong> &rarr; Bấm <strong>"Phê duyệt"</strong> &rarr; Gán xe &amp; lái xe &rarr; Xác nhận.</li>
+            <li>Xem xe/lái xe <strong>đổi trạng thái</strong> + <strong>Dashboard cập nhật</strong>. Bấm <strong>"Kết thúc chuyến"</strong> &rarr; Xe &amp; lái xe quay về chờ.</li>
         </ol>
     </div>
 
     <!-- ========== DATE RANGE ========== -->
     <div class="date-range-bar" id="date-range"></div>
 
-    <!-- ========== DASHBOARD ========== -->
+    <!-- ========== DASHBOARD: VEHICLE STATS ========== -->
     <section class="dashboard">
         <div class="stat-card stat-total">
             <div class="stat-number" id="stat-total">0</div>
@@ -61,6 +61,22 @@
         <div class="stat-card stat-available">
             <div class="stat-number" id="stat-available">0</div>
             <div class="stat-label">Sẵn sàng</div>
+        </div>
+    </section>
+
+    <!-- ========== DASHBOARD: REQUEST STATS ========== -->
+    <section class="dashboard-requests">
+        <div class="stat-card stat-req-pending">
+            <div class="stat-number" id="stat-req-pending">0</div>
+            <div class="stat-label">YC chờ phê duyệt</div>
+        </div>
+        <div class="stat-card stat-req-approved">
+            <div class="stat-number" id="stat-req-approved">0</div>
+            <div class="stat-label">YC đã phê duyệt</div>
+        </div>
+        <div class="stat-card stat-req-rejected">
+            <div class="stat-number" id="stat-req-rejected">0</div>
+            <div class="stat-label">YC bị từ chối</div>
         </div>
     </section>
 
@@ -86,68 +102,120 @@
         </div>
     </section>
 
-    <!-- ========== VEHICLE TABLE ========== -->
-    <section class="section-panel">
-        <div class="section-header">
-            <h2>Danh sách phương tiện thuộc quản lý</h2>
-            <div class="section-toolbar">
-                <input type="text" id="vehicle-search" placeholder="Tìm biển số...">
-                <select id="vehicle-filter">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="available">Sẵn sàng</option>
-                    <option value="onduty">Đang công tác</option>
-                    <option value="maintenance">Đang bảo trì</option>
-                </select>
-            </div>
-        </div>
-        <div class="section-body">
-            <table class="vtb-table">
-                <thead>
-                    <tr>
-                        <th class="col-stt">STT</th>
-                        <th>Biển kiểm soát</th>
-                        <th>Loại xe</th>
-                        <th>Trạng thái</th>
-                        <th>Dự kiến trống lúc</th>
-                        <th>Ghi chú</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="vehicle-tbody"></tbody>
-            </table>
-        </div>
-    </section>
+    <!-- ========== TAB NAVIGATION ========== -->
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="tab-fleet">Xe &amp; Lái xe</button>
+        <button class="tab-btn" data-tab="tab-requests">Yêu cầu <span class="tab-badge" id="tab-req-badge" style="display:none;">0</span></button>
+    </nav>
 
-    <!-- ========== DRIVER TABLE ========== -->
-    <section class="section-panel">
-        <div class="section-header">
-            <h2>Danh sách lái xe</h2>
-            <div class="section-toolbar">
-                <input type="text" id="driver-search" placeholder="Tìm theo tên...">
-                <select id="driver-filter">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="waiting">Đang chờ lệnh</option>
-                    <option value="driving">Đang cầm lái</option>
-                    <option value="leave">Nghỉ phép</option>
-                </select>
+    <!-- ========== TAB PANEL 1: FLEET (Xe + Lái xe) ========== -->
+    <div id="tab-fleet" class="tab-panel active">
+
+        <!-- VEHICLE TABLE -->
+        <section class="section-panel">
+            <div class="section-header">
+                <h2>Danh sách phương tiện thuộc quản lý</h2>
+                <div class="section-toolbar">
+                    <input type="text" id="vehicle-search" placeholder="Tìm biển số...">
+                    <select id="vehicle-filter">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="available">Sẵn sàng</option>
+                        <option value="onduty">Đang công tác</option>
+                        <option value="maintenance">Đang bảo trì</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="section-body">
-            <table class="vtb-table">
-                <thead>
-                    <tr>
-                        <th class="col-stt">STT</th>
-                        <th>Họ tên</th>
-                        <th>Trạng thái</th>
-                        <th>Lộ trình / Chuyến</th>
-                        <th>Ghi chú</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="driver-tbody"></tbody>
-            </table>
-        </div>
-    </section>
+            <div class="section-body">
+                <table class="vtb-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">STT</th>
+                            <th>Biển kiểm soát</th>
+                            <th>Loại xe</th>
+                            <th>Trạng thái</th>
+                            <th>Dự kiến trống lúc</th>
+                            <th>Tài xế / Lộ trình</th>
+                            <th>Ghi chú</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vehicle-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- DRIVER TABLE -->
+        <section class="section-panel">
+            <div class="section-header">
+                <h2>Danh sách lái xe</h2>
+                <div class="section-toolbar">
+                    <input type="text" id="driver-search" placeholder="Tìm theo tên...">
+                    <select id="driver-filter">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="waiting">Đang chờ lệnh</option>
+                        <option value="driving">Đang cầm lái</option>
+                        <option value="leave">Nghỉ phép</option>
+                    </select>
+                </div>
+            </div>
+            <div class="section-body">
+                <table class="vtb-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">STT</th>
+                            <th>Họ tên</th>
+                            <th>Trạng thái</th>
+                            <th>Lộ trình / Chuyến</th>
+                            <th>Ghi chú</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="driver-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div><!-- /tab-fleet -->
+
+    <!-- ========== TAB PANEL 2: REQUESTS (Yêu cầu) ========== -->
+    <div id="tab-requests" class="tab-panel">
+
+        <section class="section-panel">
+            <div class="section-header">
+                <h2>Danh sách yêu cầu điều xe</h2>
+                <div class="section-toolbar">
+                    <input type="text" id="request-search" placeholder="Tìm người YC / lộ trình...">
+                    <select id="request-filter">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ phê duyệt</option>
+                        <option value="approved">Đã phê duyệt</option>
+                        <option value="rejected">Bị từ chối</option>
+                    </select>
+                    <button class="btn btn-success btn-sm" id="btn-create-request">+ Tạo yêu cầu</button>
+                </div>
+            </div>
+            <div class="section-body">
+                <table class="vtb-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">STT</th>
+                            <th>Người yêu cầu</th>
+                            <th>Mục đích</th>
+                            <th>Lộ trình</th>
+                            <th>TG bắt đầu</th>
+                            <th>TG kết thúc</th>
+                            <th>Ưu tiên</th>
+                            <th>Trạng thái</th>
+                            <th>Ghi chú</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="request-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div><!-- /tab-requests -->
 
     <!-- ========== UPCOMING + REPORT ========== -->
     <div class="mini-section">
@@ -224,44 +292,107 @@
     </div>
 </footer>
 
-<!-- ========== MODAL: TẠO LỆNH ĐIỀU XE ========== -->
-<div class="modal-overlay" id="modal-order">
+<!-- ========== MODAL: TẠO YÊU CẦU ĐIỀU XE (Nhân viên) ========== -->
+<div class="modal-overlay" id="modal-create-request">
     <div class="modal-box">
         <div class="modal-header">
-            <h2>Phiếu điều xe (Demo)</h2>
+            <h2>Tạo yêu cầu điều xe (Demo)</h2>
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label>Xe được điều</label>
-                <input type="text" id="order-vehicle" readonly>
+                <label>Người yêu cầu <span style="color:#C8102E;">*</span></label>
+                <input type="text" id="req-requester" placeholder="VD: Trần Thị Mai Hương">
+            </div>
+            <div class="form-group">
+                <label>Mục đích / Công tác <span style="color:#C8102E;">*</span></label>
+                <input type="text" id="req-purpose" placeholder="VD: Đi giao dịch khách hàng VIP">
+            </div>
+            <div class="form-group">
+                <label>Lộ trình <span style="color:#C8102E;">*</span></label>
+                <input type="text" id="req-route" placeholder="VD: PGD Bình Thủy → PGD KCN Thốt Nốt">
+            </div>
+            <div class="form-group">
+                <label>Thời gian bắt đầu dự kiến</label>
+                <input type="datetime-local" id="req-start">
+            </div>
+            <div class="form-group">
+                <label>Thời gian kết thúc dự kiến</label>
+                <input type="datetime-local" id="req-end">
+            </div>
+            <div class="form-group">
+                <label>Ưu tiên</label>
+                <select id="req-priority">
+                    <option value="normal">Thường</option>
+                    <option value="urgent">Gấp</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ghi chú</label>
+                <textarea id="req-note" placeholder="Ghi chú thêm (nếu có)..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="btn-cancel-request">Hủy</button>
+            <button class="btn btn-primary" id="btn-submit-request">Gửi yêu cầu</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODAL: PHÊ DUYỆT & GÁN XE (Admin) ========== -->
+<div class="modal-overlay" id="modal-approve">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Phê duyệt &amp; Gán xe (Demo)</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="req-info" id="approve-info"></div>
+            <div class="form-group">
+                <label>Chọn xe <span style="color:#C8102E;">*</span></label>
+                <select id="approve-vehicle">
+                    <option value="">-- Chọn xe --</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>Chọn lái xe <span style="color:#C8102E;">*</span></label>
-                <select id="order-driver">
+                <select id="approve-driver">
                     <option value="">-- Chọn lái xe --</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Lộ trình <span style="color:#C8102E;">*</span></label>
-                <input type="text" id="order-route" placeholder="VD: PGD Bình Thủy → PGD KCN Thốt Nốt">
+                <label>Thời gian bắt đầu (có thể điều chỉnh)</label>
+                <input type="datetime-local" id="approve-start">
             </div>
             <div class="form-group">
-                <label>Thời gian bắt đầu</label>
-                <input type="datetime-local" id="order-start">
-            </div>
-            <div class="form-group">
-                <label>Thời gian dự kiến kết thúc</label>
-                <input type="datetime-local" id="order-end">
-            </div>
-            <div class="form-group">
-                <label>Ghi chú</label>
-                <textarea id="order-note" placeholder="Ghi chú thêm (nếu có)..."></textarea>
+                <label>Thời gian dự kiến kết thúc (có thể điều chỉnh)</label>
+                <input type="datetime-local" id="approve-end">
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" id="btn-cancel-order">Hủy</button>
-            <button class="btn btn-primary" id="btn-submit-order">Duyệt lệnh</button>
+            <button class="btn btn-outline" id="btn-cancel-approve">Hủy</button>
+            <button class="btn btn-primary" id="btn-submit-approve">Xác nhận phê duyệt</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODAL: TỪ CHỐI YÊU CẦU (Admin) ========== -->
+<div class="modal-overlay" id="modal-reject">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Từ chối yêu cầu</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="req-info" id="reject-info"></div>
+            <div class="form-group">
+                <label>Lý do từ chối <span style="color:#C8102E;">*</span></label>
+                <textarea id="reject-reason" placeholder="Nhập lý do từ chối yêu cầu..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="btn-cancel-reject">Hủy</button>
+            <button class="btn btn-danger" id="btn-submit-reject">Xác nhận từ chối</button>
         </div>
     </div>
 </div>

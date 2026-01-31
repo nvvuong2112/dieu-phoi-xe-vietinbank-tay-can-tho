@@ -185,6 +185,17 @@ body {
 .stat-maintenance .stat-number { color: var(--vtb-red); }
 .stat-available .stat-number { color: var(--vtb-green); }
 
+/* --- Dashboard: Request Stats Row --- */
+.dashboard-requests {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 0 0 12px;
+}
+.stat-req-pending .stat-number { color: var(--vtb-orange); }
+.stat-req-approved .stat-number { color: var(--vtb-green); }
+.stat-req-rejected .stat-number { color: var(--vtb-red); }
+
 /* --- Chart Section --- */
 .chart-section {
     background: var(--vtb-white);
@@ -228,6 +239,62 @@ body {
     width: 14px; height: 14px;
     border-radius: 2px;
     flex-shrink: 0;
+}
+
+/* --- Tab Navigation --- */
+.tab-nav {
+    display: flex;
+    gap: 0;
+    margin: 16px 0 0;
+    border-bottom: 3px solid var(--vtb-blue);
+}
+.tab-btn {
+    padding: 10px 22px;
+    background: var(--vtb-gray-header);
+    border: 1px solid var(--vtb-gray-border);
+    border-bottom: none;
+    border-radius: var(--radius) var(--radius) 0 0;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--vtb-text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+    top: 1px;
+    margin-right: 2px;
+}
+.tab-btn:hover {
+    background: var(--vtb-blue-light);
+    color: var(--vtb-blue);
+}
+.tab-btn.active {
+    background: var(--vtb-blue);
+    color: var(--vtb-white);
+    border-color: var(--vtb-blue);
+}
+.tab-panel {
+    display: none;
+}
+.tab-panel.active {
+    display: block;
+}
+.tab-badge {
+    display: inline-block;
+    background: var(--vtb-red);
+    color: var(--vtb-white);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-family: Arial, sans-serif;
+}
+.tab-btn.active .tab-badge {
+    background: var(--vtb-white);
+    color: var(--vtb-red);
 }
 
 /* --- Section Panel --- */
@@ -286,6 +353,7 @@ body {
     cursor: pointer;
 }
 .section-toolbar select option { color: var(--vtb-text); background: var(--vtb-white); }
+.section-toolbar .btn { margin-left: 4px; }
 .section-body { padding: 0; overflow-x: auto; }
 
 /* --- Table --- */
@@ -332,6 +400,15 @@ body {
 .badge-waiting { background: var(--vtb-green-light); color: var(--vtb-green); border: 1px solid var(--vtb-green); }
 .badge-driving { background: var(--vtb-blue-light); color: var(--vtb-blue-dark); border: 1px solid var(--vtb-blue); }
 .badge-leave { background: var(--vtb-orange-light); color: var(--vtb-orange); border: 1px solid var(--vtb-orange); }
+
+/* Request status badges */
+.badge-pending { background: var(--vtb-orange-light); color: var(--vtb-orange); border: 1px solid var(--vtb-orange); }
+.badge-approved { background: var(--vtb-green-light); color: var(--vtb-green); border: 1px solid var(--vtb-green); }
+.badge-rejected { background: var(--vtb-red-light); color: var(--vtb-red); border: 1px solid var(--vtb-red); }
+
+/* Priority badges */
+.badge-priority-normal { background: var(--vtb-gray-header); color: var(--vtb-text-secondary); border: 1px solid var(--vtb-gray-border); }
+.badge-priority-urgent { background: var(--vtb-red); color: var(--vtb-white); border: 1px solid var(--vtb-red); }
 
 /* --- Buttons --- */
 .btn {
@@ -449,6 +526,20 @@ body {
     gap: 8px;
 }
 
+/* --- Modal: Request Info Display --- */
+.req-info {
+    background: var(--vtb-gray-bg);
+    border: 1px solid var(--vtb-gray-border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+}
+.req-info strong {
+    color: var(--vtb-blue);
+}
+
 /* --- Small Tables (Lịch xe, Báo cáo) --- */
 .mini-section {
     display: grid;
@@ -540,7 +631,7 @@ body {
     position: relative;
 }
 .viewer-tooltip::after {
-    content: "Chi Admin/Dieu hanh duoc thao tac";
+    content: "Chỉ Admin/Điều hành được thao tác";
     position: absolute;
     bottom: 110%;
     left: 50%;
@@ -554,19 +645,23 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
+    z-index: 10;
 }
 .viewer-tooltip:hover::after { opacity: 1; }
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
     .dashboard { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-requests { grid-template-columns: repeat(3, 1fr); }
     .mini-section { grid-template-columns: 1fr; }
     .header-inner { flex-direction: column; align-items: center; }
     .header-right { width: 100%; justify-content: center; }
+    .tab-btn { padding: 8px 14px; font-size: 0.8rem; }
 }
 @media (max-width: 600px) {
     html { font-size: 13px; }
     .dashboard { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .dashboard-requests { grid-template-columns: 1fr; gap: 8px; }
     .stat-card .stat-number { font-size: 1.6rem; }
     .section-toolbar { width: 100%; }
     .section-toolbar input[type="text"] { width: 100%; }
@@ -576,6 +671,8 @@ body {
     .btn { padding: 4px 8px; font-size: 0.7rem; }
     .modal-box { max-width: 100%; }
     .chart-container canvas { max-width: 160px; max-height: 160px; }
+    .tab-btn { padding: 7px 10px; font-size: 0.76rem; }
+    .tab-nav { flex-wrap: wrap; }
 }
 @media (max-width: 420px) {
     .dashboard { grid-template-columns: 1fr; }
